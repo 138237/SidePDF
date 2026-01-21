@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PDF Viewer</title>
+  <style>
+    html, body { height: 100%; margin: 0; background: #d9d9d9; }
+    #wrap { height: 100%; overflow: auto; padding: 18px; box-sizing: border-box; }
+    canvas { display:block; margin: 0 auto 18px; background:#fff; box-shadow: 0 6px 18px rgba(0,0,0,.18); border-radius: 6px; }
+    #hud {
+      position: fixed; right: 10px; top: 10px;
+      background: rgba(255,255,255,.85);
+      padding: 6px 10px; border-radius: 10px;
+      font: 12px/1.2 system-ui, -apple-system, Segoe UI, Arial;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap"></div>
+  <div id="hud">加载中…</div>
+
+  <!-- ✅ 注意：这里用你目录里的 pdfjs/pdf.js -->
+  <script src="./pdfjs/pdf.js"></script>
+  <script src="./viewer.js"></script>
+</body>
+</html>
