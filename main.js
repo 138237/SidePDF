@@ -48,17 +48,30 @@ async function startLocalServer() {
     selectedPdfPath = p;
   };
 
+  const HOST = "127.0.0.1";
+  const BASE_PORT = 18080; // ✅ 固定端口（被占用就 +1）
+
   return new Promise((resolve, reject) => {
-    server = appServer.listen(0, "127.0.0.1", () => {
-      PORT = server.address().port;
-      resolve();
-    });
-    server.on("error", reject);
+    const tryListen = (p) => {
+      server = appServer.listen(p, HOST, () => {
+        PORT = p;
+        resolve();
+      });
+
+      server.on("error", (err) => {
+        if (err && err.code === "EADDRINUSE") {
+          tryListen(p + 1);
+        } else {
+          reject(err);
+        }
+      });
+    };
+
+    tryListen(BASE_PORT);
   });
 }
 
 function viewerUrlForDemo() {
-  // pdf-mini/pdf/demo.pdf
   return `http://127.0.0.1:${PORT}/viewer.html?file=${encodeURIComponent(
     `http://127.0.0.1:${PORT}/pdf/demo.pdf`
   )}`;
@@ -274,10 +287,10 @@ async function create() {
     win.focus();
   });
 
-  // ✅ 默认先打开 demo（你也可以改成启动就弹选择框）
+  // ✅ 默认先打开 demo
   await win.loadURL(viewerUrlForDemo());
 
-  // ✅ 拖动/缩放窗口：实时更新快照（保证“收纳那一刻”能恢复）
+  // ✅ 拖动/缩放窗口：实时更新快照
   win.on("moved", () => dockMode && snapshotExpandedState());
   win.on("resized", () => dockMode && snapshotExpandedState());
 
@@ -302,7 +315,7 @@ async function create() {
     if (dockMode && clickThrough) collapseToEdge();
   });
 
-  // 透明度：Ctrl+Alt+Up / Down（同步更新快照）
+  // 透明度：Ctrl+Alt+Up / Down
   globalShortcut.register("Control+Alt+Up", () => {
     if (!win) return;
     win.setOpacity(clamp(win.getOpacity() + 0.05, 0.1, 1));
@@ -335,13 +348,13 @@ async function create() {
     }
   });
 
-  // ✅ 用户选择 PDF：Ctrl+O
+  // ✅ 用户选择 PDF：Ctrl+Alt+O
   globalShortcut.register("Control+Alt+O", () => {
     if (!win) return;
     choosePdfAndLoad();
   });
 
-  // 失焦淡出（不影响收纳透明度策略）
+  // 失焦淡出
   win.on("blur", () => {
     if (!win) return;
     if (!dockMode && !clickThrough) win.setOpacity(0.25);
